@@ -1,5 +1,5 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
-import { categories, getByCategory } from "@/lib/catalog";
+import { categories, getByCategory, type Product } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
 
 export const Route = createFileRoute("/category/$slug")({
