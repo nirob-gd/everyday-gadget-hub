@@ -37,7 +37,7 @@ function CategoryPage() {
         </div>
       ) : (
         <div className="grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4">
-          {products.map((p) => <ProductCard key={p.id} product={p} />)}
+          {products.map((p: Product) => <ProductCard key={p.id} product={p} />)}
         </div>
       )}
     </div>
