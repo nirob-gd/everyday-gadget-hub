@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
+import logoAsset from "@/assets/mitu-logo.png.asset.json";
 
 const links = [
   { to: "/", label: "Home" },
@@ -19,9 +20,8 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b bg-background/85 backdrop-blur">
       <div className="container-page flex h-16 items-center gap-4">
-        <Link to="/" className="flex items-center gap-2 font-bold">
-          <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-brand-foreground">G</span>
-          <span className="text-lg tracking-tight">GadgetHub</span>
+        <Link to="/" className="flex items-center" aria-label="Mitu Home and Curtain">
+          <img src={logoAsset.url} alt="Mitu Home and Curtain" className="h-10 w-auto" />
         </Link>
 
         <nav className="ml-8 hidden items-center gap-6 md:flex">
