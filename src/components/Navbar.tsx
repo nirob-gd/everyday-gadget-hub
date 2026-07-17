@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useStore } from "@/lib/store";
 import { cn } from "@/lib/utils";
-import logoAsset from "@/assets/mitu-logo.png.asset.json";
+import logoAsset from "@/assets/mitu-logo.svg.asset.json";
 
 const links = [
   { to: "/", label: "Home" },
