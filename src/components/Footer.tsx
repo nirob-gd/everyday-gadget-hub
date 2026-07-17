@@ -7,10 +7,7 @@ export function Footer() {
     <footer className="mt-24 border-t bg-secondary/40">
       <div className="container-page grid gap-10 py-14 md:grid-cols-4">
         <div>
-          <div className="flex items-center gap-2 font-bold">
-            <span className="grid h-8 w-8 place-items-center rounded-lg bg-brand text-brand-foreground">G</span>
-            <span className="text-lg">GadgetHub</span>
-          </div>
+          <img src={logoAsset.url} alt="Mitu Home and Curtain" className="h-12 w-auto" />
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
             Everyday gadgets and accessories delivered across Bangladesh.
           </p>
