@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Facebook } from "lucide-react";
+import logoAsset from "@/assets/mitu-logo.png.asset.json";
 
 export function Footer() {
   return (
