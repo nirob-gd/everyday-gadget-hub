@@ -24,7 +24,7 @@ const iconMap: Record<string, LucideIcon> = {
 };
 
 export function CategoryCard({ category }: { category: Category }) {
-  const Icon = iconMap[category.icon] ?? Headphones;
+  const Icon = iconMap[category.icon] ?? Home;
   return (
     <Link
       to="/category/$slug"
