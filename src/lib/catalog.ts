@@ -24,14 +24,14 @@ export type Category = {
 };
 
 export const categories: Category[] = [
-  { name: "Earphones", slug: "earphones", icon: "Headphones", count: 24 },
-  { name: "Wireless Earbuds", slug: "wireless-earbuds", icon: "Ear", count: 18 },
-  { name: "DAC & Converters", slug: "dac-converters", icon: "AudioLines", count: 12 },
-  { name: "Gaming Coolers", slug: "gaming-coolers", icon: "Fan", count: 9 },
-  { name: "Cables", slug: "cables", icon: "Cable", count: 32 },
-  { name: "Finger Sleeves", slug: "finger-sleeves", icon: "Hand", count: 14 },
-  { name: "RC & Drift Cars", slug: "rc-drift-cars", icon: "Car", count: 7 },
-  { name: "Digital Audio Players", slug: "digital-audio-players", icon: "Music", count: 6 },
+  { name: "Curtains", slug: "curtains", icon: "Blinds", count: 42 },
+  { name: "Curtain Rods", slug: "curtain-rods", icon: "Ruler", count: 18 },
+  { name: "Cushions & Pillows", slug: "cushions", icon: "Sofa", count: 26 },
+  { name: "Bed Sheets", slug: "bed-sheets", icon: "BedDouble", count: 22 },
+  { name: "Rugs & Carpets", slug: "rugs", icon: "Layers", count: 15 },
+  { name: "Wallpapers", slug: "wallpapers", icon: "Palette", count: 20 },
+  { name: "Blinds & Shades", slug: "blinds", icon: "LampCeiling", count: 12 },
+  { name: "Home Decor", slug: "home-decor", icon: "Home", count: 30 },
 ];
 
 export const brands = [
