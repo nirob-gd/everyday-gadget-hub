@@ -67,6 +67,11 @@ export function ProductCard({ product }: { product: Product }) {
             <ShoppingCart size={16} />
           </Button>
         </div>
+        <Button size="sm" className="mt-2 w-full" asChild>
+          <Link to="/checkout" search={{ product: product.slug, qty: 1 }}>
+            Buy Now
+          </Link>
+        </Button>
       </div>
     </div>
   );
