@@ -9,7 +9,7 @@ export function Footer() {
         <div>
           <img src={logoAsset.url} alt="Mitu Home and Curtain" className="h-12 w-auto" />
           <p className="mt-3 max-w-xs text-sm text-muted-foreground">
-            Everyday gadgets and accessories delivered across Bangladesh.
+            Elegant curtains and home decor delivered across Bangladesh.
           </p>
           <a
             href="https://facebook.com"
@@ -24,8 +24,8 @@ export function Footer() {
           <h4 className="mb-3 text-sm font-semibold">Shop</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li><Link to="/shop" className="hover:text-brand">All products</Link></li>
-            <li><Link to="/category/$slug" params={{ slug: "earphones" }} className="hover:text-brand">Earphones</Link></li>
-            <li><Link to="/category/$slug" params={{ slug: "cables" }} className="hover:text-brand">Accessories</Link></li>
+            <li><Link to="/category/$slug" params={{ slug: "curtains" }} className="hover:text-brand">Curtains</Link></li>
+            <li><Link to="/category/$slug" params={{ slug: "cushions" }} className="hover:text-brand">Cushions</Link></li>
           </ul>
         </div>
 
@@ -43,8 +43,8 @@ export function Footer() {
           <h4 className="mb-3 text-sm font-semibold">Store info</h4>
           <ul className="space-y-2 text-sm text-muted-foreground">
             <li>Delivery: 1-3 days across Bangladesh</li>
-            <li>Support: hello@gadgethub.bd</li>
-            <li>© {new Date().getFullYear()} GadgetHub</li>
+            <li>Support: hello@mituhome.bd</li>
+            <li>© {new Date().getFullYear()} Mitu Home and Curtain</li>
           </ul>
         </div>
       </div>

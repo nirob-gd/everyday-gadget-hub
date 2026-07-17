@@ -1,26 +1,26 @@
 import { Link } from "@tanstack/react-router";
 import type { Category } from "@/lib/catalog";
 import {
-  Headphones,
-  Ear,
-  AudioLines,
-  Fan,
-  Cable,
-  Hand,
-  Car,
-  Music,
+  Blinds,
+  Ruler,
+  Sofa,
+  BedDouble,
+  Layers,
+  Palette,
+  LampCeiling,
+  Home,
   type LucideIcon,
 } from "lucide-react";
 
 const iconMap: Record<string, LucideIcon> = {
-  Headphones,
-  Ear,
-  AudioLines,
-  Fan,
-  Cable,
-  Hand,
-  Car,
-  Music,
+  Blinds,
+  Ruler,
+  Sofa,
+  BedDouble,
+  Layers,
+  Palette,
+  LampCeiling,
+  Home,
 };
 
 export function CategoryCard({ category }: { category: Category }) {

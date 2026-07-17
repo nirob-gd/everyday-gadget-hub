@@ -15,8 +15,8 @@ export function Hero() {
             <span className="h-1.5 w-1.5 rounded-full bg-brand" /> Spotlight this week
           </div>
           <h1 className="text-4xl font-bold tracking-tight sm:text-5xl lg:text-6xl">
-            Everyday gadgets and audio,{" "}
-            <span className="text-brand">delivered across Bangladesh</span>
+            Transform Your Home with{" "}
+            <span className="text-brand">Elegant Curtains</span>
           </h1>
           <p className="mt-5 max-w-xl text-base text-muted-foreground sm:text-lg">
             Hand-picked earphones, portable DACs, cables and accessories from the brands enthusiasts trust — with reliable local delivery and easy checkout.
