@@ -21,7 +21,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 border-b bg-background/85 backdrop-blur">
       <div className="container-page flex h-16 items-center gap-4">
         <Link to="/" className="flex items-center" aria-label="Mitu Home and Curtain">
-          <img src={logoAsset.url} alt="Mitu Home and Curtain" className="h-10 w-auto" />
+          <img src={logoAsset.url} alt="Mitu Home and Curtain" className="h-12 w-auto" />
         </Link>
 
         <nav className="ml-8 hidden items-center gap-6 md:flex">
