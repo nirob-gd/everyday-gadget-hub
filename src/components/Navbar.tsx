@@ -56,7 +56,7 @@ export function Navbar() {
             <Link to="/account/profile"><User size={18} /></Link>
           </Button>
           <Button size="icon" variant="ghost" aria-label="Cart" asChild className="relative">
-            <Link to="/shop">
+            <Link to="/cart">
               <ShoppingCart size={18} />
               {cartCount > 0 && (
                 <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-brand px-1 text-[10px] font-bold text-brand-foreground">

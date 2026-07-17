@@ -88,6 +88,11 @@ function ProductPage() {
             >
               <ShoppingCart size={18} /> Add to cart
             </Button>
+            <Button size="lg" variant="secondary" asChild>
+              <Link to="/checkout" search={{ product: product.slug, qty }}>
+                Buy Now
+              </Link>
+            </Button>
             <Button
               size="lg"
               variant="outline"
