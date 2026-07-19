@@ -26,7 +26,9 @@ function Home() {
 
   return (
     <>
+      <WebBanner />
       <Hero />
+
 
       <section className="container-page py-16 sm:py-20">
         <SectionHeader
