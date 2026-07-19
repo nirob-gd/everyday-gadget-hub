@@ -76,8 +76,8 @@ export function WebBanner() {
   }, [api]);
 
   return (
-    <section className="w-full">
-      <div className="container-page pt-4 sm:pt-6">
+    <section className="w-full bg-gradient-to-br from-primary-soft via-background to-background py-6 sm:py-10">
+      <div className="container-page">
         <Carousel setApi={setApi} opts={{ loop: true }} className="relative">
           <CarouselContent>
             {slides.map((s, i) => (
