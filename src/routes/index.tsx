@@ -1,5 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Hero } from "@/components/Hero";
+import { WebBanner } from "@/components/WebBanner";
 import { SectionHeader } from "@/components/SectionHeader";
 import { CategoryCard } from "@/components/CategoryCard";
 import { BrandBadge } from "@/components/BrandBadge";
