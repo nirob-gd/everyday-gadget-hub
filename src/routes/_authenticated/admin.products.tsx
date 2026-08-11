@@ -70,7 +70,7 @@ function AdminProducts() {
       imagePath = path;
     }
 
-    const payload: Record<string, unknown> = {
+    const payload = {
       name,
       slug: slugify(name),
       category_id: String(fd.get("category_id") ?? "") || null,
@@ -80,12 +80,13 @@ function AdminProducts() {
       stock: Number(fd.get("stock") ?? 0),
       is_active: fd.get("is_active") === "on",
       is_featured: fd.get("is_featured") === "on",
+      ...(imagePath ? { image_url: imagePath } : {}),
     };
-    if (imagePath) payload.image_url = imagePath;
 
     const res = editing
       ? await supabase.from("products").update(payload).eq("id", editing.id)
-      : await supabase.from("products").insert(payload as never);
+      : await supabase.from("products").insert(payload);
+
 
     setSaving(false);
     if (res.error) return toast.error(res.error.message);
