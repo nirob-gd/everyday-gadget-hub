@@ -37,11 +37,12 @@ const slides: Slide[] = [
   },
   {
     image: slide2.url,
-    eyebrow: "Limited Time",
-    title: "Cushions & Bedding Sale",
-    subtitle: "Up to 40% off premium bedding this week only.",
-    cta: "Shop Sale",
-    href: "/shop",
+    eyebrow: "Comfort at home",
+    title: "Cushions & Bedding",
+    subtitle: "Soft textures and calm colours for your bedroom.",
+    cta: "Shop Bedding",
+    href: "/category/bed-sheets",
+
     align: "right",
     tone: "light",
   },

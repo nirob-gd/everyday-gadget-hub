@@ -16,10 +16,10 @@ export function ProductCard({ product }: { product: Product }) {
       <Link
         to="/product/$slug"
         params={{ slug: product.slug }}
-        className={cn("relative flex aspect-square items-center justify-center overflow-hidden", product.gradient)}
+        className={cn("relative flex aspect-square items-center justify-center overflow-hidden", !product.imageUrl && product.gradient)}
       >
         {product.discountPercent && (
-          <span className="absolute left-3 top-3 rounded-full bg-destructive px-2 py-0.5 text-[11px] font-semibold text-destructive-foreground">
+          <span className="absolute left-3 top-3 z-10 rounded-full bg-destructive px-2 py-0.5 text-[11px] font-semibold text-destructive-foreground">
             -{product.discountPercent}%
           </span>
         )}
@@ -29,11 +29,20 @@ export function ProductCard({ product }: { product: Product }) {
             toggleWishlist(product.id);
           }}
           aria-label="Toggle wishlist"
-          className="absolute right-3 top-3 grid h-8 w-8 place-items-center rounded-full bg-background/90 backdrop-blur transition hover:bg-background"
+          className="absolute right-3 top-3 z-10 grid h-8 w-8 place-items-center rounded-full bg-background/90 backdrop-blur transition hover:bg-background"
         >
           <Heart size={16} className={wished ? "fill-destructive text-destructive" : "text-foreground"} />
         </button>
-        <Package className="h-20 w-20 text-white/70 drop-shadow-lg transition-transform group-hover:scale-110" strokeWidth={1.2} />
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            loading="lazy"
+            className="h-full w-full object-cover transition-transform group-hover:scale-105"
+          />
+        ) : (
+          <Package className="h-20 w-20 text-white/70 drop-shadow-lg transition-transform group-hover:scale-110" strokeWidth={1.2} />
+        )}
         <div className="absolute inset-x-3 bottom-3 translate-y-3 opacity-0 transition-all group-hover:translate-y-0 group-hover:opacity-100">
           <Button size="sm" className="w-full" variant="secondary">
             View
@@ -49,7 +58,7 @@ export function ProductCard({ product }: { product: Product }) {
         >
           {product.name}
         </Link>
-        <Rating rating={product.rating} reviewCount={product.reviewCount} />
+        {product.rating !== undefined && <Rating rating={product.rating} reviewCount={product.reviewCount} />}
         <div className="mt-auto flex items-end justify-between pt-2">
           <div className="flex flex-col">
             <span className="text-base font-bold text-foreground">{formatBDT(product.price)}</span>

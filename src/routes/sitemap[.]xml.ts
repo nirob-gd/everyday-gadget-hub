@@ -13,15 +13,20 @@ export const Route = createFileRoute("/sitemap.xml")({
   server: {
     handlers: {
       GET: async () => {
-        const { products, categories } = await import("@/lib/catalog");
+        const { supabase } = await import("@/integrations/supabase/client");
+        const [{ data: categories }, { data: products }] = await Promise.all([
+          supabase.from("categories").select("slug"),
+          supabase.from("products").select("slug").eq("is_active", true),
+        ]);
         const entries: SitemapEntry[] = [
           { path: "/", changefreq: "weekly", priority: "1.0" },
           { path: "/shop", changefreq: "daily", priority: "0.9" },
           { path: "/contact", changefreq: "monthly", priority: "0.5" },
           { path: "/warranty-policy", changefreq: "monthly", priority: "0.4" },
-          ...categories.map((c) => ({ path: `/category/${c.slug}`, changefreq: "weekly" as const, priority: "0.7" })),
-          ...products.map((p) => ({ path: `/product/${p.slug}`, changefreq: "weekly" as const, priority: "0.7" })),
+          ...(categories ?? []).map((c: { slug: string }) => ({ path: `/category/${c.slug}`, changefreq: "weekly" as const, priority: "0.7" })),
+          ...(products ?? []).map((p: { slug: string }) => ({ path: `/product/${p.slug}`, changefreq: "weekly" as const, priority: "0.7" })),
         ];
+
 
         const urls = entries.map((e) => `  <url>\n    <loc>${BASE_URL}${e.path}</loc>\n    ${e.changefreq ? `<changefreq>${e.changefreq}</changefreq>` : ""}\n    ${e.priority ? `<priority>${e.priority}</priority>` : ""}\n  </url>`);
 
