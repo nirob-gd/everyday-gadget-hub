@@ -1,9 +1,15 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { mockOrders, formatBDT } from "@/lib/catalog";
-import { Badge } from "@/components/ui/badge";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "@/components/ui/button";
 
 export const Route = createFileRoute("/account/orders")({
-  head: () => ({ meta: [{ title: "My Orders — GadgetHub" }, { name: "description", content: "Track your GadgetHub orders." }] }),
+  head: () => ({
+    meta: [
+      { title: "My Orders — Mitu Home and Curtain" },
+      { name: "description", content: "Track your Mitu Home and Curtain orders." },
+      { property: "og:title", content: "My Orders — Mitu Home and Curtain" },
+      { property: "og:description", content: "Track your curtain and home decor orders." },
+    ],
+  }),
   component: Orders,
 });
 
@@ -11,33 +17,15 @@ function Orders() {
   return (
     <div>
       <h2 className="text-xl font-bold">Order history</h2>
-      <p className="mt-1 text-sm text-muted-foreground">Sample data — connect a backend to persist real orders.</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Orders you place are confirmed by phone by our team.
+      </p>
 
-      <div className="mt-6 overflow-hidden rounded-2xl border">
-        <table className="w-full text-sm">
-          <thead className="bg-muted/60 text-left text-xs uppercase tracking-wider text-muted-foreground">
-            <tr>
-              <th className="px-4 py-3">Order</th>
-              <th className="px-4 py-3">Date</th>
-              <th className="px-4 py-3">Items</th>
-              <th className="px-4 py-3">Status</th>
-              <th className="px-4 py-3 text-right">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            {mockOrders.map((o) => (
-              <tr key={o.id} className="border-t">
-                <td className="px-4 py-4 font-semibold">{o.id}</td>
-                <td className="px-4 py-4 text-muted-foreground">{o.date}</td>
-                <td className="px-4 py-4">{o.items}</td>
-                <td className="px-4 py-4">
-                  <Badge variant={o.status === "Delivered" ? "default" : "secondary"}>{o.status}</Badge>
-                </td>
-                <td className="px-4 py-4 text-right font-semibold">{formatBDT(o.total)}</td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+      <div className="mt-6 rounded-2xl border border-dashed p-16 text-center">
+        <p className="text-muted-foreground">
+          No orders to show here yet. Keep the order number from your confirmation — our team can look it up for you.
+        </p>
+        <Button className="mt-4" asChild><Link to="/shop">Start shopping</Link></Button>
       </div>
     </div>
   );

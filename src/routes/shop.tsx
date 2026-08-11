@@ -1,46 +1,53 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useQuery } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
-import { products, categories, brands } from "@/lib/catalog";
 import { ProductCard } from "@/components/ProductCard";
+import { ProductCardSkeleton } from "@/components/ProductCardSkeleton";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search } from "lucide-react";
+import { categoriesQuery, publicProductsQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/shop")({
   head: () => ({
     meta: [
-      { title: "Shop all gadgets & audio gear — GadgetHub" },
-      { name: "description", content: "Browse the full catalog with filters for category, brand, price and sort order." },
+      { title: "Shop curtains, rugs & home decor — Mitu Home and Curtain" },
+      { name: "description", content: "Browse the full Mitu Home and Curtain catalog with filters for category, price and sort order." },
+      { property: "og:title", content: "Shop curtains, rugs & home decor — Mitu Home and Curtain" },
+      { property: "og:description", content: "Browse curtains, cushions, bed sheets, rugs, blinds and decor delivered across Bangladesh." },
     ],
   }),
   component: Shop,
 });
 
 function Shop() {
+  const { data: categories = [] } = useQuery(categoriesQuery);
+  const { data: products, isLoading } = useQuery(publicProductsQuery);
+
   const [query, setQuery] = useState("");
   const [cat, setCat] = useState<string>("all");
-  const [brand, setBrand] = useState<string>("all");
-  const [sort, setSort] = useState<string>("popular");
+  const [sort, setSort] = useState<string>("newest");
   const [maxPrice, setMaxPrice] = useState<number>(20000);
 
   const filtered = useMemo(() => {
-    let list = products.filter((p) =>
+    let list = (products ?? []).filter((p) =>
       (cat === "all" || p.categorySlug === cat) &&
-      (brand === "all" || p.brand === brand) &&
       p.price <= maxPrice &&
       (query === "" || p.name.toLowerCase().includes(query.toLowerCase()))
     );
     if (sort === "price-asc") list = [...list].sort((a, b) => a.price - b.price);
     if (sort === "price-desc") list = [...list].sort((a, b) => b.price - a.price);
-    if (sort === "rating") list = [...list].sort((a, b) => b.rating - a.rating);
+    if (sort === "rating") list = [...list].sort((a, b) => (b.rating ?? 0) - (a.rating ?? 0));
     return list;
-  }, [query, cat, brand, sort, maxPrice]);
+  }, [products, query, cat, sort, maxPrice]);
 
   return (
     <div className="container-page py-10">
       <div className="mb-8">
         <h1 className="text-3xl font-bold tracking-tight">Shop</h1>
-        <p className="mt-1 text-sm text-muted-foreground">{filtered.length} products</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          {isLoading ? "Loading products…" : `${filtered.length} products`}
+        </p>
       </div>
 
       <div className="grid gap-8 lg:grid-cols-[260px_1fr]">
@@ -58,12 +65,6 @@ function Shop() {
               <FilterButton key={c.slug} active={cat === c.slug} onClick={() => setCat(c.slug)}>{c.name}</FilterButton>
             ))}
           </FilterGroup>
-          <FilterGroup label="Brand">
-            <FilterButton active={brand === "all"} onClick={() => setBrand("all")}>All brands</FilterButton>
-            {brands.map((b) => (
-              <FilterButton key={b} active={brand === b} onClick={() => setBrand(b)}>{b}</FilterButton>
-            ))}
-          </FilterGroup>
           <div>
             <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Max Price: BDT {maxPrice.toLocaleString()}</label>
             <input type="range" min={500} max={20000} step={500} value={maxPrice} onChange={(e) => setMaxPrice(Number(e.target.value))} className="w-full accent-[var(--brand)]" />
@@ -75,7 +76,7 @@ function Shop() {
             <div className="text-sm text-muted-foreground">Sort by</div>
             <div className="flex flex-wrap gap-2">
               {[
-                { v: "popular", l: "Popular" },
+                { v: "newest", l: "Newest" },
                 { v: "rating", l: "Top rated" },
                 { v: "price-asc", l: "Price ↑" },
                 { v: "price-desc", l: "Price ↓" },
@@ -85,9 +86,15 @@ function Shop() {
             </div>
           </div>
 
-          {filtered.length === 0 ? (
+          {isLoading ? (
+            <div className="grid grid-cols-2 gap-4 md:grid-cols-3">
+              {Array.from({ length: 6 }).map((_, i) => <ProductCardSkeleton key={i} />)}
+            </div>
+          ) : filtered.length === 0 ? (
             <div className="rounded-2xl border border-dashed p-16 text-center text-muted-foreground">
-              No products match those filters.
+              {(products ?? []).length === 0
+                ? "No products have been published yet — check back soon."
+                : "No products match those filters."}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-4 md:grid-cols-3">

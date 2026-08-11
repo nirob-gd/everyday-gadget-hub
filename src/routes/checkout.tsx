@@ -1,11 +1,15 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { Package, ShieldCheck, Truck, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatBDT, getProduct, type Product } from "@/lib/catalog";
+import { formatBDT, type Product } from "@/lib/catalog";
+import { publicProductQuery } from "@/lib/queries";
+import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store";
 import { toast } from "sonner";
+
 
 type CheckoutSearch = {
   product?: string;
@@ -49,12 +53,16 @@ function CheckoutPage() {
   const navigate = useNavigate();
 
   // Buy Now takes priority: if a valid product slug is present, checkout only that item.
+  const { data: buyNowProduct } = useQuery({
+    ...publicProductQuery(buyNowSlug ?? ""),
+    enabled: Boolean(buyNowSlug),
+  });
+
   const buyNowItem = useMemo(() => {
-    if (!buyNowSlug) return null;
-    const p = getProduct(buyNowSlug);
-    if (!p) return null;
-    return { product: p, qty: buyNowQty ?? 1 };
-  }, [buyNowSlug, buyNowQty]);
+    if (!buyNowSlug || !buyNowProduct) return null;
+    return { product: buyNowProduct, qty: buyNowQty ?? 1 };
+  }, [buyNowSlug, buyNowProduct, buyNowQty]);
+
 
   const items: { product: Product; qty: number }[] = buyNowItem ? [buyNowItem] : cart;
   const subtotal = buyNowItem
@@ -66,6 +74,8 @@ function CheckoutPage() {
   const [payment, setPayment] = useState<"cod" | "bkash" | "nagad">("cod");
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [placed, setPlaced] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
+
 
   if (items.length === 0 && !placed) {
     return (
@@ -108,7 +118,7 @@ function CheckoutPage() {
     );
   }
 
-  function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();
     const fd = new FormData(e.currentTarget);
     const parsed = orderSchema.safeParse({
@@ -139,7 +149,51 @@ function CheckoutPage() {
     }
 
     setErrors({});
+    setSubmitting(true);
+    const d = parsed.data;
     const orderId = `ORD-${Math.floor(10000 + Math.random() * 89999)}`;
+
+    const { data: order, error } = await supabase
+      .from("orders")
+      .insert({
+        order_number: orderId,
+        customer_name: d.fullName,
+        phone: d.phone,
+        email: d.email || null,
+        address: `${d.address}, ${d.area}`,
+        city: d.city,
+        payment_method: d.payment,
+        payment_reference: d.bkashNumber || null,
+        subtotal,
+        delivery_fee: shipping,
+        total: grandTotal,
+        notes: d.notes || null,
+      })
+      .select("id")
+      .single();
+
+    if (error || !order) {
+      setSubmitting(false);
+      toast.error("Could not place your order. Please try again.");
+      return;
+    }
+
+    const { error: itemsError } = await supabase.from("order_items").insert(
+      items.map(({ product, qty }) => ({
+        order_id: order.id,
+        product_id: product.id,
+        product_name: product.name,
+        unit_price: product.price,
+        quantity: qty,
+      })),
+    );
+    if (itemsError) {
+      setSubmitting(false);
+      toast.error("Could not save your order items. Please try again.");
+      return;
+    }
+
+    setSubmitting(false);
     if (!buyNowItem) clearCart();
     setPlaced(orderId);
     toast.success(`Order ${orderId} placed successfully`);
@@ -148,6 +202,7 @@ function CheckoutPage() {
     }, 50);
     void navigate;
   }
+
 
   const inputCls =
     "w-full rounded-lg border bg-background px-3 py-2.5 text-sm outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20";
@@ -274,7 +329,7 @@ function CheckoutPage() {
               <span className="text-sm font-semibold">Total</span>
               <span className="text-2xl font-bold">{formatBDT(grandTotal)}</span>
             </div>
-            <Button type="submit" size="lg" className="mt-5 w-full">
+            <Button type="submit" size="lg" className="mt-5 w-full" disabled={submitting}>
               Place order
             </Button>
           </div>
