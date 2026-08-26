@@ -44,7 +44,7 @@ export function BottomNav() {
             <Link
               key={item.label}
               to={item.to}
-              search={"search" in item ? item.search : undefined}
+              search={"search" in item ? (item.search as any) : undefined}
               className={cn(
                 "flex flex-col items-center justify-center gap-1 py-2 text-muted-foreground transition-colors",
                 isActive && "text-brand"
