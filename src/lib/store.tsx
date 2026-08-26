@@ -1,14 +1,18 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import type { Product } from "./catalog";
 
-type CartItem = { product: Product; qty: number };
+export type CartItem = { product: Product; qty: number; selectedImagePath?: string };
+
+/** Cart lines are unique per product + chosen image, so the same product can be added twice with different designs. */
+export const cartItemKey = (item: Pick<CartItem, "product" | "selectedImagePath">) =>
+  `${item.product.id}::${item.selectedImagePath ?? ""}`;
 
 type StoreCtx = {
   cart: CartItem[];
   wishlist: string[];
-  addToCart: (p: Product, qty?: number) => void;
-  removeFromCart: (id: string) => void;
-  updateQty: (id: string, qty: number) => void;
+  addToCart: (p: Product, qty?: number, selectedImagePath?: string) => void;
+  removeFromCart: (key: string) => void;
+  updateQty: (key: string, qty: number) => void;
   clearCart: () => void;
   toggleWishlist: (id: string) => void;
   isWished: (id: string) => boolean;
@@ -49,15 +53,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const value = useMemo<StoreCtx>(() => ({
     cart,
     wishlist,
-    addToCart: (p, qty = 1) =>
+    addToCart: (p, qty = 1, selectedImagePath) =>
       setCart((prev) => {
-        const found = prev.find((i) => i.product.id === p.id);
-        if (found) return prev.map((i) => (i.product.id === p.id ? { ...i, qty: i.qty + qty } : i));
-        return [...prev, { product: p, qty }];
+        const key = cartItemKey({ product: p, selectedImagePath });
+        const found = prev.find((i) => cartItemKey(i) === key);
+        if (found) return prev.map((i) => (cartItemKey(i) === key ? { ...i, qty: i.qty + qty } : i));
+        return [...prev, { product: p, qty, selectedImagePath }];
       }),
-    removeFromCart: (id) => setCart((prev) => prev.filter((i) => i.product.id !== id)),
-    updateQty: (id, qty) =>
-      setCart((prev) => prev.map((i) => (i.product.id === id ? { ...i, qty: Math.max(1, qty) } : i))),
+    removeFromCart: (key) => setCart((prev) => prev.filter((i) => cartItemKey(i) !== key)),
+    updateQty: (key, qty) =>
+      setCart((prev) => prev.map((i) => (cartItemKey(i) === key ? { ...i, qty: Math.max(1, qty) } : i))),
     clearCart: () => setCart([]),
     toggleWishlist: (id) =>
       setWishlist((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id])),
