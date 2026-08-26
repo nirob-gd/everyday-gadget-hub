@@ -8,7 +8,7 @@ const items = [
   { to: "/", label: "Home", icon: Home, exact: true },
   { to: `https://wa.me/${WHATSAPP_NUMBER}`, label: "WhatsApp", icon: MessageCircle, external: true },
   { to: "/shop", label: "Categories", icon: LayoutGrid },
-  { to: "/shop", label: "Flash Sale", icon: Zap, search: { deal: "flash" } },
+  { to: "/shop", label: "Flash Sale", icon: Zap, search: { deal: "flash" as const } },
   { to: "/account/profile", label: "Account", icon: User },
 ];
 
