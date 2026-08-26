@@ -53,8 +53,10 @@ function Home() {
           eyebrow="Browse"
           title="Product categories"
           subtitle="Curtains, bedding, rugs and everything that finishes a room."
+          action="View All"
+          actionHref="/shop"
         />
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
+        <div className="grid grid-cols-3 gap-3 sm:gap-4 md:grid-cols-4">
           {categories.map((c) => <CategoryCard key={c.slug} category={c} />)}
         </div>
       </section>

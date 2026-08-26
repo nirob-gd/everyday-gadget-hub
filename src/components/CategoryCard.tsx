@@ -9,6 +9,7 @@ import {
   Palette,
   LampCeiling,
   Home,
+  Waves,
   type LucideIcon,
 } from "lucide-react";
 
@@ -21,6 +22,7 @@ const iconMap: Record<string, LucideIcon> = {
   Palette,
   LampCeiling,
   Home,
+  Waves,
 };
 
 export function CategoryCard({ category }: { category: Category }) {
@@ -29,14 +31,15 @@ export function CategoryCard({ category }: { category: Category }) {
     <Link
       to="/category/$slug"
       params={{ slug: category.slug }}
-      className="group flex flex-col items-center gap-3 rounded-2xl border bg-card p-6 text-center transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md"
+      className="group flex flex-col items-center gap-2 rounded-2xl border bg-card p-3 text-center transition-all hover:-translate-y-0.5 hover:border-brand hover:shadow-md sm:gap-3 sm:p-6"
     >
-      <div className="grid h-14 w-14 place-items-center rounded-2xl bg-primary-soft text-brand transition-transform group-hover:scale-110">
-        <Icon size={26} strokeWidth={1.75} />
+      <div className="grid h-12 w-12 place-items-center rounded-2xl bg-primary-soft text-brand transition-transform group-hover:scale-110 sm:h-14 sm:w-14">
+        <Icon size={22} strokeWidth={1.75} className="sm:hidden" />
+        <Icon size={26} strokeWidth={1.75} className="hidden sm:block" />
       </div>
       <div>
-        <div className="text-sm font-semibold">{category.name}</div>
-        <div className="text-xs text-muted-foreground">{category.count} items</div>
+        <div className="text-xs font-semibold sm:text-sm">{category.name}</div>
+        <div className="text-[11px] text-muted-foreground sm:text-xs">{category.count} items</div>
       </div>
     </Link>
   );
