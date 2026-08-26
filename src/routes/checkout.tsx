@@ -1,12 +1,13 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type FormEvent } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { Package, ShieldCheck, Truck, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { formatBDT, type Product } from "@/lib/catalog";
 import { publicProductQuery } from "@/lib/queries";
-import { supabase } from "@/integrations/supabase/client";
+import { placeOrder } from "@/lib/orders.functions";
 import { useStore } from "@/lib/store";
 import { toast } from "sonner";
 
@@ -51,6 +52,7 @@ function CheckoutPage() {
   const { product: buyNowSlug, qty: buyNowQty } = Route.useSearch();
   const { cart, cartTotal, clearCart } = useStore();
   const navigate = useNavigate();
+  const submitOrder = useServerFn(placeOrder);
 
   // Buy Now takes priority: if a valid product slug is present, checkout only that item.
   const { data: buyNowProduct } = useQuery({
@@ -151,52 +153,33 @@ function CheckoutPage() {
     setErrors({});
     setSubmitting(true);
     const d = parsed.data;
-    const orderId = `ORD-${Math.floor(10000 + Math.random() * 89999)}`;
 
-    const { data: order, error } = await supabase
-      .from("orders")
-      .insert({
-        order_number: orderId,
-        customer_name: d.fullName,
-        phone: d.phone,
-        email: d.email || null,
-        address: `${d.address}, ${d.area}`,
-        city: d.city,
-        payment_method: d.payment,
-        payment_reference: d.bkashNumber || null,
-        subtotal,
-        delivery_fee: shipping,
-        total: grandTotal,
-        notes: d.notes || null,
-      })
-      .select("id")
-      .single();
-
-    if (error || !order) {
+    let orderNumber: string;
+    try {
+      const result = await submitOrder({
+        data: {
+          fullName: d.fullName,
+          phone: d.phone,
+          email: d.email || "",
+          address: `${d.address}, ${d.area}`,
+          city: d.city,
+          notes: d.notes || "",
+          payment: d.payment,
+          paymentReference: d.bkashNumber || "",
+          items: items.map(({ product, qty }) => ({ productId: product.id, qty })),
+        },
+      });
+      orderNumber = result.orderNumber;
+    } catch {
       setSubmitting(false);
       toast.error("Could not place your order. Please try again.");
       return;
     }
 
-    const { error: itemsError } = await supabase.from("order_items").insert(
-      items.map(({ product, qty }) => ({
-        order_id: order.id,
-        product_id: product.id,
-        product_name: product.name,
-        unit_price: product.price,
-        quantity: qty,
-      })),
-    );
-    if (itemsError) {
-      setSubmitting(false);
-      toast.error("Could not save your order items. Please try again.");
-      return;
-    }
-
     setSubmitting(false);
     if (!buyNowItem) clearCart();
-    setPlaced(orderId);
-    toast.success(`Order ${orderId} placed successfully`);
+    setPlaced(orderNumber);
+    toast.success(`Order ${orderNumber} placed successfully`);
     setTimeout(() => {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }, 50);
