@@ -86,13 +86,14 @@ export type OrderItemRow = {
   product_name: string;
   unit_price: number | string;
   quantity: number;
+  selected_image_path: string | null;
 };
 
 export const ORDER_STATUSES = ["pending", "confirmed", "shipped", "delivered", "cancelled"] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
 const ORDER_SELECT =
-  "id,order_number,customer_name,phone,email,address,city,payment_method,payment_reference,subtotal,delivery_fee,total,status,notes,created_at,order_items(id,product_name,unit_price,quantity)";
+  "id,order_number,customer_name,phone,email,address,city,payment_method,payment_reference,subtotal,delivery_fee,total,status,notes,created_at,order_items(id,product_name,unit_price,quantity,selected_image_path)";
 
 export const adminOrdersQuery = queryOptions({
   queryKey: ["orders", "admin"],
@@ -113,6 +114,21 @@ export const adminOrderQuery = (id: string) =>
       const { data, error } = await supabase.from("orders").select(ORDER_SELECT).eq("id", id).maybeSingle();
       if (error) throw error;
       return (data ?? null) as unknown as OrderRow | null;
+    },
+  });
+
+/** Gallery rows for a product, used by the admin product form. */
+export const productImagesQuery = (productId: string) =>
+  queryOptions({
+    queryKey: ["product-images", productId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("product_images")
+        .select("id,image_path,sort_order")
+        .eq("product_id", productId)
+        .order("sort_order", { ascending: true });
+      if (error) throw error;
+      return (data ?? []) as { id: string; image_path: string; sort_order: number }[];
     },
   });
 
