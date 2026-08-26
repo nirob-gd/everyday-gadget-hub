@@ -13,6 +13,7 @@ import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
+import { BottomNav } from "@/components/BottomNav";
 import { StoreProvider } from "@/lib/store";
 import { Toaster } from "@/components/ui/sonner";
 
@@ -115,8 +116,9 @@ function RootComponent() {
       <StoreProvider>
         <div className="flex min-h-screen flex-col">
           <Navbar />
-          <main className="flex-1"><Outlet /></main>
+          <main className="flex-1 pb-16 md:pb-0"><Outlet /></main>
           <Footer />
+          <BottomNav />
         </div>
         <Toaster />
       </StoreProvider>
