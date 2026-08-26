@@ -8,7 +8,7 @@ import { Rating } from "@/components/Rating";
 import { ProductCard } from "@/components/ProductCard";
 import { useStore } from "@/lib/store";
 import { toast } from "sonner";
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 export const Route = createFileRoute("/product/$slug")({
   head: ({ params }) => ({
@@ -29,6 +29,13 @@ function ProductPage() {
   const { data: allProducts = [] } = useQuery(publicProductsQuery);
   const { addToCart, toggleWishlist, isWished } = useStore();
   const [qty, setQty] = useState(1);
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+
+  const images = useMemo(() => product?.images ?? [], [product]);
+
+  useEffect(() => {
+    setSelectedPath(images[0]?.path ?? null);
+  }, [images]);
 
   if (isLoading) {
     return <div className="container-page py-20 text-center text-muted-foreground">Loading product…</div>;
@@ -45,6 +52,7 @@ function ProductPage() {
   }
 
   const wished = isWished(product.id);
+  const mainUrl = images.find((i) => i.path === selectedPath)?.url ?? product.imageUrl;
   const related = allProducts.filter((p) => p.categorySlug === product.categorySlug && p.id !== product.id).slice(0, 4);
 
   return (
@@ -54,16 +62,50 @@ function ProductPage() {
       </Link>
 
       <div className="mt-6 grid gap-10 lg:grid-cols-2">
-        <div className={`relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl border ${product.imageUrl ? "" : product.gradient}`}>
-          {product.imageUrl ? (
-            <img src={product.imageUrl} alt={product.name} className="h-full w-full object-cover" />
-          ) : (
-            <Package className="h-56 w-56 text-white/80" strokeWidth={1} />
-          )}
-          {product.discountPercent && (
-            <span className="absolute left-5 top-5 rounded-full bg-destructive px-3 py-1 text-xs font-bold text-destructive-foreground">
-              -{product.discountPercent}%
-            </span>
+        <div className="space-y-3">
+          <div className={`relative flex aspect-square items-center justify-center overflow-hidden rounded-3xl border ${mainUrl ? "" : product.gradient}`}>
+            {mainUrl ? (
+              <img src={mainUrl} alt={product.name} className="h-full w-full object-cover" />
+            ) : (
+              <Package className="h-56 w-56 text-white/80" strokeWidth={1} />
+            )}
+            {product.discountPercent && (
+              <span className="absolute left-5 top-5 rounded-full bg-destructive px-3 py-1 text-xs font-bold text-destructive-foreground">
+                -{product.discountPercent}%
+              </span>
+            )}
+          </div>
+
+          {images.length > 1 && (
+            <>
+              <div className="flex gap-3 overflow-x-auto pb-2">
+                {images.map((img) => {
+                  const active = img.path === selectedPath;
+                  return (
+                    <button
+                      key={img.id}
+                      type="button"
+                      onClick={() => setSelectedPath(img.path)}
+                      aria-label={`Select image ${img.id}`}
+                      aria-pressed={active}
+                      className={`relative h-20 w-20 shrink-0 overflow-hidden rounded-xl border-2 transition ${
+                        active ? "border-brand ring-2 ring-brand/25" : "border-border hover:border-brand/50"
+                      }`}
+                    >
+                      <img src={img.url} alt={product.name} loading="lazy" className="h-full w-full object-cover" />
+                      {active && (
+                        <span className="absolute bottom-1 right-1 grid h-5 w-5 place-items-center rounded-full bg-brand text-white">
+                          <Check size={12} />
+                        </span>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Tap a design to select it — your choice is sent with the order.
+              </p>
+            </>
           )}
         </div>
 
@@ -98,14 +140,14 @@ function ProductPage() {
             <Button
               size="lg"
               onClick={() => {
-                addToCart(product, qty);
+                addToCart(product, qty, selectedPath ?? undefined);
                 toast.success(`${product.name} added to cart`);
               }}
             >
               <ShoppingCart size={18} /> Add to cart
             </Button>
             <Button size="lg" variant="secondary" asChild>
-              <Link to="/checkout" search={{ product: product.slug, qty }}>
+              <Link to="/checkout" search={{ product: product.slug, qty, img: selectedPath ?? undefined }}>
                 Buy Now
               </Link>
             </Button>
