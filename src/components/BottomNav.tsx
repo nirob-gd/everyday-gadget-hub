@@ -10,7 +10,7 @@ const items = [
   { to: "/shop", label: "Categories", icon: LayoutGrid },
   { to: "/shop", label: "Flash Sale", icon: Zap, search: { deal: "flash" } },
   { to: "/account/profile", label: "Account", icon: User },
-] as const;
+];
 
 export function BottomNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
