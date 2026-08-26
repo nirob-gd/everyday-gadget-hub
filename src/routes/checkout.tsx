@@ -52,6 +52,7 @@ function CheckoutPage() {
   const { product: buyNowSlug, qty: buyNowQty } = Route.useSearch();
   const { cart, cartTotal, clearCart } = useStore();
   const navigate = useNavigate();
+  const submitOrder = useServerFn(placeOrder);
 
   // Buy Now takes priority: if a valid product slug is present, checkout only that item.
   const { data: buyNowProduct } = useQuery({
