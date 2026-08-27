@@ -3,6 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState, type FormEvent } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { adminProductsQuery, categoriesQuery } from "@/lib/queries";
+import { productImageSrc } from "@/lib/catalog";
 import { formatBDT, type Product } from "@/lib/catalog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,23 @@ function AdminProducts() {
   const [editing, setEditing] = useState<Product | null>(null);
   const [creating, setCreating] = useState(false);
   const [saving, setSaving] = useState(false);
+
+  const gallery = editing?.images ?? [];
+
+  async function uploadFile(file: File) {
+    const path = `${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "-")}`;
+    const { error } = await supabase.storage.from("product-images").upload(path, file);
+    if (error) throw new Error(error.message);
+    return path;
+  }
+
+  async function removeGalleryImage(id: string) {
+    const { error } = await supabase.from("product_images").delete().eq("id", id);
+    if (error) return toast.error(error.message);
+    toast.success("Image removed");
+    refresh();
+    setEditing((prev) => (prev ? { ...prev, images: prev.images.filter((i) => i.id !== id) } : prev));
+  }
 
   const rows = useMemo(
     () =>
@@ -59,15 +77,16 @@ function AdminProducts() {
     const file = fd.get("image") as File | null;
     setSaving(true);
 
+    const galleryFiles = (fd.getAll("gallery") as File[]).filter((f) => f && f.size > 0);
+
     let imagePath: string | undefined;
-    if (file && file.size > 0) {
-      const path = `${crypto.randomUUID()}-${file.name.replace(/[^a-zA-Z0-9.]/g, "-")}`;
-      const { error: upErr } = await supabase.storage.from("product-images").upload(path, file);
-      if (upErr) {
-        setSaving(false);
-        return toast.error(upErr.message);
-      }
-      imagePath = path;
+    let galleryPaths: string[] = [];
+    try {
+      if (file && file.size > 0) imagePath = await uploadFile(file);
+      galleryPaths = await Promise.all(galleryFiles.map(uploadFile));
+    } catch (err) {
+      setSaving(false);
+      return toast.error(err instanceof Error ? err.message : "Image upload failed");
     }
 
     const payload = {
@@ -84,12 +103,31 @@ function AdminProducts() {
     };
 
     const res = editing
-      ? await supabase.from("products").update(payload).eq("id", editing.id)
-      : await supabase.from("products").insert(payload);
+      ? await supabase.from("products").update(payload).eq("id", editing.id).select("id").single()
+      : await supabase.from("products").insert(payload).select("id").single();
 
+    if (res.error) {
+      setSaving(false);
+      return toast.error(res.error.message);
+    }
+
+    const productId = res.data.id as string;
+    if (galleryPaths.length > 0) {
+      const startOrder = editing ? gallery.length : 0;
+      const { error: imgErr } = await supabase.from("product_images").insert(
+        galleryPaths.map((path, i) => ({
+          product_id: productId,
+          image_path: path,
+          sort_order: startOrder + i,
+        })),
+      );
+      if (imgErr) {
+        setSaving(false);
+        return toast.error(imgErr.message);
+      }
+    }
 
     setSaving(false);
-    if (res.error) return toast.error(res.error.message);
     toast.success(editing ? "Product updated" : "Product created");
     setEditing(null);
     setCreating(false);
@@ -127,9 +165,34 @@ function AdminProducts() {
           <label className="text-sm">Stock
             <Input name="stock" type="number" min={0} defaultValue={editing?.stock ?? 0} />
           </label>
-          <label className="text-sm">Image
+          <label className="text-sm">Cover image
             <input name="image" type="file" accept="image/*" className={inputCls} />
           </label>
+          <label className="text-sm sm:col-span-2">Gallery images (customers pick one at checkout)
+            <input name="gallery" type="file" accept="image/*" multiple className={inputCls} />
+          </label>
+          {editing && gallery.length > 0 && (
+            <div className="sm:col-span-2">
+              <div className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">Current gallery</div>
+              <div className="flex flex-wrap gap-3">
+                {gallery.map((img) => (
+                  <div key={img.id} className="relative h-20 w-20 overflow-hidden rounded-xl border">
+                    <img src={productImageSrc(img.path)} alt="" className="h-full w-full object-cover" />
+                    {img.id !== "cover" && (
+                      <button
+                        type="button"
+                        onClick={() => removeGalleryImage(img.id)}
+                        className="absolute right-0 top-0 bg-destructive px-1.5 text-xs font-bold text-destructive-foreground"
+                        aria-label="Remove image"
+                      >
+                        ×
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <label className="text-sm sm:col-span-2">Description
             <textarea name="description" rows={3} className={inputCls} defaultValue={editing?.description ?? ""} />
           </label>

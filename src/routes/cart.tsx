@@ -1,8 +1,8 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Minus, Plus, Trash2, ShoppingBag, ArrowRight, Package } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatBDT } from "@/lib/catalog";
-import { useStore } from "@/lib/store";
+import { formatBDT, productImageSrc } from "@/lib/catalog";
+import { useStore, cartItemKey } from "@/lib/store";
 
 export const Route = createFileRoute("/cart")({
   head: () => ({
@@ -49,14 +49,22 @@ function CartPage() {
 
       <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_360px]">
         <div className="space-y-4">
-          {cart.map(({ product, qty }) => (
-            <div key={product.id} className="flex gap-4 rounded-2xl border bg-card p-4">
+          {cart.map((item) => {
+            const { product, qty, selectedImagePath } = item;
+            const key = cartItemKey(item);
+            const thumb = productImageSrc(selectedImagePath) ?? product.imageUrl;
+            return (
+            <div key={key} className="flex gap-4 rounded-2xl border bg-card p-4">
               <Link
                 to="/product/$slug"
                 params={{ slug: product.slug }}
-                className={`relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl ${product.gradient}`}
+                className={`relative flex h-24 w-24 shrink-0 items-center justify-center overflow-hidden rounded-xl ${thumb ? "border" : product.gradient}`}
               >
-                <Package className="h-10 w-10 text-white/80" strokeWidth={1.2} />
+                {thumb ? (
+                  <img src={thumb} alt={product.name} className="h-full w-full object-cover" />
+                ) : (
+                  <Package className="h-10 w-10 text-white/80" strokeWidth={1.2} />
+                )}
               </Link>
               <div className="flex flex-1 flex-col">
                 <div className="flex items-start justify-between gap-3">
@@ -71,9 +79,12 @@ function CartPage() {
                     >
                       {product.name}
                     </Link>
+                    {selectedImagePath && (
+                      <div className="mt-1 text-xs text-muted-foreground">Selected design</div>
+                    )}
                   </div>
                   <button
-                    onClick={() => removeFromCart(product.id)}
+                    onClick={() => removeFromCart(key)}
                     aria-label="Remove item"
                     className="text-muted-foreground transition hover:text-destructive"
                   >
@@ -84,7 +95,7 @@ function CartPage() {
                   <div className="flex items-center rounded-lg border">
                     <button
                       className="grid h-9 w-9 place-items-center text-muted-foreground hover:text-foreground"
-                      onClick={() => updateQty(product.id, qty - 1)}
+                      onClick={() => updateQty(key, qty - 1)}
                       aria-label="Decrease quantity"
                     >
                       <Minus size={14} />
@@ -92,7 +103,7 @@ function CartPage() {
                     <span className="w-8 text-center text-sm font-semibold">{qty}</span>
                     <button
                       className="grid h-9 w-9 place-items-center text-muted-foreground hover:text-foreground"
-                      onClick={() => updateQty(product.id, qty + 1)}
+                      onClick={() => updateQty(key, qty + 1)}
                       aria-label="Increase quantity"
                     >
                       <Plus size={14} />
@@ -109,7 +120,8 @@ function CartPage() {
                 </div>
               </div>
             </div>
-          ))}
+            );
+          })}
 
           <div className="flex justify-between pt-2">
             <Button variant="ghost" asChild>

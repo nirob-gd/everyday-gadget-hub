@@ -5,22 +5,24 @@ import { useServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { Package, ShieldCheck, Truck, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { formatBDT, type Product } from "@/lib/catalog";
+import { formatBDT, productImageSrc } from "@/lib/catalog";
 import { publicProductQuery } from "@/lib/queries";
 import { placeOrder } from "@/lib/orders.functions";
-import { useStore } from "@/lib/store";
+import { useStore, cartItemKey, type CartItem } from "@/lib/store";
 import { toast } from "sonner";
 
 
 type CheckoutSearch = {
   product?: string;
   qty?: number;
+  img?: string;
 };
 
 export const Route = createFileRoute("/checkout")({
   validateSearch: (search: Record<string, unknown>): CheckoutSearch => ({
     product: typeof search.product === "string" ? search.product : undefined,
     qty: typeof search.qty === "number" && search.qty > 0 ? Math.floor(search.qty) : undefined,
+    img: typeof search.img === "string" ? search.img : undefined,
   }),
   head: () => ({
     meta: [
@@ -49,7 +51,7 @@ const orderSchema = z.object({
 });
 
 function CheckoutPage() {
-  const { product: buyNowSlug, qty: buyNowQty } = Route.useSearch();
+  const { product: buyNowSlug, qty: buyNowQty, img: buyNowImg } = Route.useSearch();
   const { cart, cartTotal, clearCart } = useStore();
   const navigate = useNavigate();
   const submitOrder = useServerFn(placeOrder);
@@ -62,11 +64,11 @@ function CheckoutPage() {
 
   const buyNowItem = useMemo(() => {
     if (!buyNowSlug || !buyNowProduct) return null;
-    return { product: buyNowProduct, qty: buyNowQty ?? 1 };
-  }, [buyNowSlug, buyNowProduct, buyNowQty]);
+    return { product: buyNowProduct, qty: buyNowQty ?? 1, selectedImagePath: buyNowImg };
+  }, [buyNowSlug, buyNowProduct, buyNowQty, buyNowImg]);
 
 
-  const items: { product: Product; qty: number }[] = buyNowItem ? [buyNowItem] : cart;
+  const items: CartItem[] = buyNowItem ? [buyNowItem] : cart;
   const subtotal = buyNowItem
     ? buyNowItem.product.price * buyNowItem.qty
     : cartTotal;
@@ -166,7 +168,11 @@ function CheckoutPage() {
           notes: d.notes || "",
           payment: d.payment,
           paymentReference: d.bkashNumber || "",
-          items: items.map(({ product, qty }) => ({ productId: product.id, qty })),
+          items: items.map(({ product, qty, selectedImagePath }) => ({
+            productId: product.id,
+            qty,
+            selectedImagePath: selectedImagePath ?? product.images[0]?.path,
+          })),
         },
       });
       orderNumber = result.orderNumber;
@@ -283,18 +289,26 @@ function CheckoutPage() {
           <div className="rounded-2xl border bg-card p-6">
             <h2 className="text-lg font-bold">Your order</h2>
             <ul className="mt-4 space-y-3">
-              {items.map(({ product, qty }) => (
-                <li key={product.id} className="flex gap-3">
-                  <div className={`grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-lg ${product.gradient}`}>
-                    <Package className="h-6 w-6 text-white/80" strokeWidth={1.2} />
+              {items.map((item) => {
+                const { product, qty, selectedImagePath } = item;
+                const thumb = productImageSrc(selectedImagePath) ?? product.imageUrl;
+                return (
+                <li key={cartItemKey(item)} className="flex gap-3">
+                  <div className={`grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-lg ${thumb ? "border" : product.gradient}`}>
+                    {thumb ? (
+                      <img src={thumb} alt={product.name} className="h-full w-full object-cover" />
+                    ) : (
+                      <Package className="h-6 w-6 text-white/80" strokeWidth={1.2} />
+                    )}
                   </div>
                   <div className="flex flex-1 flex-col">
                     <span className="line-clamp-2 text-sm font-semibold">{product.name}</span>
-                    <span className="text-xs text-muted-foreground">Qty {qty}</span>
+                    <span className="text-xs text-muted-foreground">Qty {qty}{selectedImagePath ? " · design selected" : ""}</span>
                   </div>
                   <span className="text-sm font-semibold">{formatBDT(product.price * qty)}</span>
                 </li>
-              ))}
+                );
+              })}
             </ul>
             <dl className="mt-5 space-y-2 border-t pt-4 text-sm">
               <div className="flex justify-between">
