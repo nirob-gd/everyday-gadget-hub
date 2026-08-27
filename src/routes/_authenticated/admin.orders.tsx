@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { adminOrdersQuery, ORDER_STATUSES, type OrderRow, type OrderStatus } from "@/lib/queries";
-import { formatBDT } from "@/lib/catalog";
+import { productImageSrc, formatBDT } from "@/lib/catalog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
@@ -126,8 +126,17 @@ function AdminOrders() {
               <div className="font-semibold">Items</div>
               <ul className="mt-1 space-y-1">
                 {(open.order_items ?? []).map((it) => (
-                  <li key={it.id} className="flex justify-between gap-3">
-                    <span>{it.product_name} × {it.quantity}</span>
+                  <li key={it.id} className="flex items-center justify-between gap-3">
+                    <span className="flex items-center gap-2">
+                      {it.selected_image_path && (
+                        <img
+                          src={productImageSrc(it.selected_image_path)}
+                          alt={it.product_name}
+                          className="h-10 w-10 shrink-0 rounded-md border object-cover"
+                        />
+                      )}
+                      <span>{it.product_name} × {it.quantity}</span>
+                    </span>
                     <span className="font-medium">{formatBDT(Number(it.unit_price) * it.quantity)}</span>
                   </li>
                 ))}
