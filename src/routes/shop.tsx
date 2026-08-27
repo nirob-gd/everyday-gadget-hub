@@ -9,6 +9,9 @@ import { Search } from "lucide-react";
 import { categoriesQuery, publicProductsQuery } from "@/lib/queries";
 
 export const Route = createFileRoute("/shop")({
+  validateSearch: (search: Record<string, unknown>): { deal?: string } => ({
+    deal: typeof search.deal === "string" ? search.deal : undefined,
+  }),
   head: () => ({
     meta: [
       { title: "Shop curtains, rugs & home decor — Mitu Home and Curtain" },

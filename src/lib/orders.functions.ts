@@ -18,6 +18,7 @@ const placeOrderSchema = z.object({
       z.object({
         productId: z.string().uuid(),
         qty: z.number().int().min(1).max(50),
+        selectedImagePath: z.string().trim().max(300).optional(),
       }),
     )
     .min(1)
@@ -54,10 +55,10 @@ export const placeOrder = createServerFn({ method: "POST" })
     }
 
     const byId = new Map(products.map((p) => [p.id, p]));
-    const lines = data.items.map(({ productId, qty }) => {
+    const lines = data.items.map(({ productId, qty, selectedImagePath }) => {
       const p = byId.get(productId)!;
       const unitPrice = Number(p.sale_price ?? p.price);
-      return { productId, name: p.name, unitPrice, qty };
+      return { productId, name: p.name, unitPrice, qty, selectedImagePath: selectedImagePath ?? null };
     });
 
     const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.qty, 0);
@@ -95,6 +96,7 @@ export const placeOrder = createServerFn({ method: "POST" })
         product_name: l.name,
         unit_price: l.unitPrice,
         quantity: l.qty,
+        selected_image_path: l.selectedImagePath,
       })),
     );
 
